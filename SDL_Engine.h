@@ -36,7 +36,8 @@ public:
 		//Initialize SDL
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		{
-			printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+			printf("SDL_Init: SDL could not initialize!\n");
+			printf("SDL_Init: %s\n", SDL_GetError());
 			return false;
 		}
 
@@ -44,20 +45,23 @@ public:
 		window = SDL_CreateWindow("SDL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN);
 		if (!window)
 		{
-			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+			printf("SDL_CreateWindow: Window could not be created!\n");
+			printf("SDL_CreateWindow: %s\n", SDL_GetError());
 			return false;
 		}
 
 		if (!SDL_GL_SetSwapInterval(-1))
 		{
-			printf("Freesync not supported or enabled. Renabling Lock FPS again for that reason.\n");
+			printf("SDL_GL_SetSwapInterval: Freesync not supported or enabled. Renabling Lock FPS again for that reason.\n");
+			printf("SDL_GL_SetSwapInterval: %s\n", SDL_GetError());
 			flag = SDL_RENDERER_PRESENTVSYNC;
 		}
 
 		renderer = SDL_CreateRenderer(window, 1, SDL_RENDERER_ACCELERATED | flag);
 		if (!renderer)
 		{
-			printf("Can't create renderer\n");
+			printf("SDL_CreateRenderer: Can't create renderer\n");
+			printf("SDL_CreateRenderer: %s\n", SDL_GetError());
 			return false;
 		}
 		SDL_RenderSetLogicalSize(renderer, width, height);
@@ -76,12 +80,18 @@ public:
 			printf("IMG_Init: %s\n", IMG_GetError());
 		}
 
+		//Init sound
+		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+		{
+			printf("Mix_OpenAudio: SDL_mixer could not initialize!\n");
+			printf("Mix_OpenAudio: %s\n", Mix_GetError());
+		}
 
 		//Calculate interval time
 		frameInterval = 1000.0 / (float)fps;
 
 		SDL_GetWindowSize(window, &width, &height);
-		printf("Video OK ! Width %d, Heigth %d\n", width, height);
+		printf("Video OK!\nWidth=%d, Heigth=%d, fps=%d\n", width, height, fps);
 
 		return true;
 	}
@@ -152,7 +162,8 @@ public:
 		surface = IMG_Load(filePath.c_str());
 		if (!surface)
 		{
-			printf("Could not load image file, exit now\n");
+			printf("IMG_Load: Could not load image file.\n");
+			printf("IMG_Load: %s\n", SDL_GetError());
 			return nullptr;
 		}
 
@@ -166,13 +177,24 @@ public:
 	{
 		SDL_Rect rect;
 		int width, height;
-		SDL_QueryTexture(image, nullptr, nullptr, &width, &height);
+		int result;
+		result = SDL_QueryTexture(image, nullptr, nullptr, &width, &height);
+		if (result)
+		{
+			printf("SDL_QueryTexture: Could not query the attributes of the texture.\n");
+			printf("SDL_QueryTexture: %s\n", SDL_GetError());
+		}
 
 		rect.x = x;
 		rect.y = y;
 		rect.w = width;
 		rect.h = height;
-		SDL_RenderCopy(renderer, image, nullptr, &rect);
+		result = SDL_RenderCopy(renderer, image, nullptr, &rect);
+		if (result)
+		{
+			printf("SDL_RenderCopy: Could not copy the portion of the texture to the current rendering target.\n");
+			printf("SDL_RenderCopy: %s\n", SDL_GetError());
+		}
 	}
 
 	void UnloadImage(SDL_Texture* image)
