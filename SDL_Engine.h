@@ -2,10 +2,13 @@
 #ifndef SDL_ENGINE_H
 #define SDL_ENGINE_H
 
-#include <stdio.h>
+#include <iostream>
+#include <string>
+
 #include <SDL2/SDL.h>
-//#include <SDL2/SDL_image.h>
-//#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+
 class SDL_Engine
 {
 
@@ -14,24 +17,6 @@ private:
 	SDL_Renderer* renderer;
 	//Interval time between two frames (ms)
 	float frameInterval;
-
-	//const unsigned int keysCode[KEY_COUNT] =
-	//{
-	//	SDL_SCANCODE_UP,
-	//	SDL_SCANCODE_DOWN,
-	//	SDL_SCANCODE_LEFT,
-	//	SDL_SCANCODE_RIGHT,
-	//	SDL_SCANCODE_LCTRL,//A
-	//	SDL_SCANCODE_LALT,//B
-	//	SDL_SCANCODE_LSHIFT,//Y
-	//	SDL_SCANCODE_SPACE,//X
-	//	SDL_SCANCODE_TAB,//L1
-	//	SDL_SCANCODE_BACKSPACE,//R1
-	//	SDL_SCANCODE_RETURN,//START
-	//	SDL_SCANCODE_ESCAPE,//SELECT
-	//	SDL_SCANCODE_PAGEUP,//L2
-	//	SDL_SCANCODE_PAGEDOWN//R2
-	//};
 
 public:
 	bool exit = false;
@@ -56,7 +41,7 @@ public:
 		}
 
 		//Create window
-		window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("SDL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN);
 		if (!window)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -77,10 +62,20 @@ public:
 		}
 		SDL_RenderSetLogicalSize(renderer, width, height);
 
-		// Clear everything on screen
+		//Clear everything on screen
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 		SDL_RenderPresent(renderer);
+
+		//Init JPG and PNG
+		int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
+		int initted = IMG_Init(imgFlags);
+		if ((initted & imgFlags) != imgFlags) 
+		{
+			printf("IMG_Init: Failed to init required jpg and png support!\n");
+			printf("IMG_Init: %s\n", IMG_GetError());
+		}
+
 
 		//Calculate interval time
 		frameInterval = 1000.0 / (float)fps;
@@ -148,5 +143,46 @@ public:
 			}
 		}
 	}
+
+	SDL_Texture* LoadImage(std::string filePath)
+	{
+		SDL_Texture* texture;
+		SDL_Surface* surface;
+
+		surface = IMG_Load(filePath.c_str());
+		if (!surface)
+		{
+			printf("Could not load image file, exit now\n");
+			return nullptr;
+		}
+
+		texture = SDL_CreateTextureFromSurface(renderer, surface);
+		SDL_FreeSurface(surface);
+
+		return texture;
+	}
+
+	void DisplayImage(SDL_Texture* image,int x,int y)
+	{
+		SDL_Rect rect;
+		int width, height;
+		SDL_QueryTexture(image, nullptr, nullptr, &width, &height);
+
+		rect.x = x;
+		rect.y = y;
+		rect.w = width;
+		rect.h = height;
+		SDL_RenderCopy(renderer, image, nullptr, &rect);
+	}
+
+	void UnloadImage(SDL_Texture* image)
+	{
+		if (image)
+		{
+			SDL_DestroyTexture(image);
+			delete image;
+		}
+	}
 };
+
 #endif
