@@ -15,29 +15,33 @@ private:
 	//Interval time between two frames (ms)
 	float frameInterval;
 
-	//use SDL_Scancode instead of SDL_Keycode
-	#define KEY_COUNT 14
-	const unsigned int keysCode[KEY_COUNT] =
-	{
-		SDL_SCANCODE_UP,
-		SDL_SCANCODE_DOWN,
-		SDL_SCANCODE_LEFT,
-		SDL_SCANCODE_RIGHT,
-		SDL_SCANCODE_LCTRL,//A
-		SDL_SCANCODE_LALT,//B
-		SDL_SCANCODE_LSHIFT,//Y
-		SDL_SCANCODE_SPACE,//X
-		SDL_SCANCODE_TAB,//L1
-		SDL_SCANCODE_BACKSPACE,//R1
-		SDL_SCANCODE_RETURN,//START
-		SDL_SCANCODE_ESCAPE,//SELECT
-		SDL_SCANCODE_PAGEUP,//L2
-		SDL_SCANCODE_PAGEDOWN//R2
-	};
+	//const unsigned int keysCode[KEY_COUNT] =
+	//{
+	//	SDL_SCANCODE_UP,
+	//	SDL_SCANCODE_DOWN,
+	//	SDL_SCANCODE_LEFT,
+	//	SDL_SCANCODE_RIGHT,
+	//	SDL_SCANCODE_LCTRL,//A
+	//	SDL_SCANCODE_LALT,//B
+	//	SDL_SCANCODE_LSHIFT,//Y
+	//	SDL_SCANCODE_SPACE,//X
+	//	SDL_SCANCODE_TAB,//L1
+	//	SDL_SCANCODE_BACKSPACE,//R1
+	//	SDL_SCANCODE_RETURN,//START
+	//	SDL_SCANCODE_ESCAPE,//SELECT
+	//	SDL_SCANCODE_PAGEUP,//L2
+	//	SDL_SCANCODE_PAGEDOWN//R2
+	//};
 
 public:
-	bool keyPress[KEY_COUNT];
 	bool exit = false;
+
+	//Create delegate for key press or up
+	typedef void (*KeyPressEvent) (int scanCode,int keyCode, bool isPress);
+	KeyPressEvent keyPressEventHandler;
+
+	//Create delegate for joystick position change
+	//int joystickEventHandler;
 
 	bool Init(int width, int height, bool fullScreen=true,int fps=60)
 	{
@@ -133,13 +137,12 @@ public:
 				case SDL_KEYDOWN:
 				case SDL_KEYUP:
 				{
-					for (int i = 0; i < sizeof(keysCode) / sizeof(keysCode[0]); i++)
-					{
-						if (event.key.keysym.scancode == keysCode[i])
-						{
-							keyPress[i] == (event.type == SDL_KEYDOWN);
-						}
-					}
+					//Call delegate
+					keyPressEventHandler(
+						event.key.keysym.scancode, 
+						event.key.keysym.sym, 
+						event.type == SDL_KEYDOWN);
+
 					break;
 				}
 			}
