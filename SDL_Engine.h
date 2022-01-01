@@ -13,6 +13,13 @@
 #define Image_Data SDL_Texture
 #define SFX_Data Mix_Chunk
 
+struct ColorMap
+{
+	int red;
+	int green;
+	int blue;
+};
+
 class SDL_Engine
 {
 
@@ -34,7 +41,7 @@ public:
 	//Create delegate for joystick position change
 	//int joystickEventHandler;
 
-	bool Init(int width, int height, bool fullScreen=true,int fps=60)
+	bool Init(int width, int height, bool fullScreen = true, std::string title = "SDL Engine", int fps = 60)
 	{
 		//Initialization flag
 		int flag = 0;
@@ -48,7 +55,7 @@ public:
 		}
 
 		//Create window
-		window = SDL_CreateWindow("SDL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN);
 		if (!window)
 		{
 			printf("SDL_CreateWindow: Window could not be created!\n");
@@ -104,7 +111,7 @@ public:
 		frameInterval = 1000.0 / (float)fps;
 
 		SDL_GetWindowSize(window, &width, &height);
-		printf("Video OK!\nWidth=%d, Heigth=%d, fps=%d\n", width, height, fps);
+		printf("Video OK!\nWidth=%d, Heigth=%d, FPS=%d\n", width, height, fps);
 
 		return true;
 	}
@@ -167,7 +174,7 @@ public:
 		}
 	}
 
-	Image_Data* LoadImage(std::string path/*, int width=-1,int height=-1*/)
+	Image_Data* LoadImage(std::string path, ColorMap *transparentColor=nullptr)
 	{
 		Image_Data* texture;
 		SDL_Surface* surface;
@@ -178,6 +185,12 @@ public:
 			printf("IMG_Load: Could not load image file from %s.\n", path.c_str());
 			printf("Error: %s\n", SDL_GetError());
 			return nullptr;
+		}
+
+		//If set transparent color
+		if (transparentColor)
+		{
+			SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, transparentColor->red, transparentColor->green, transparentColor->blue));
 		}
 
 		////(Bug?)stretchSurface is always NULL

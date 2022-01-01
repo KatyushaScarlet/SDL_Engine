@@ -25,7 +25,7 @@ SFX_Data* sfx;
 void KeyPress(int scanCode, int keyCode, bool isPress);
 int main(int argc, char* argv[])
 {
-	if (!engine.Init(640,480,false,60))
+	if (!engine.Init(640,480,false,"Demo",60))
 	{
 		printf("Failed to create window, exit\n");
 		return 0;
@@ -35,21 +35,28 @@ int main(int argc, char* argv[])
 	engine.keyPressEventHandler = &KeyPress;
 
 	//Load image
-	Image_Data* image = engine.LoadImage("./assests/th06_covor.jpg");
+	//Image_Data* image = engine.LoadImage("./assests/th06_covor.jpg");
+	//Load front layer with transparent color
+	ColorMap black = { 0,0,0 };
+	Image_Data* front_layer = engine.LoadImage("./assests/front.bmp", &black);
+	//Load bottom layer
+	Image_Data* bottom_layer = engine.LoadImage("./assests/bottom.bmp");
 
 	//Load background music and play (loops)
-	engine.LoadMusic("./assests/th06_01.mp3");
-	engine.PlayMusic(true);
+	//engine.LoadMusic("./assests/th06_01.mp3");
+	//engine.PlayMusic(true);
 
 	//Load SFX and play
-	sfx = engine.LoadSFX("./assests/pause.wav");
-	engine.PlaySFX(sfx);
+	//sfx = engine.LoadSFX("./assests/pause.wav");
+	//engine.PlaySFX(sfx);
 
 	bool quit = false;
 	while (!quit)
 	{
 		//Display
-		engine.DisplayImage(image, 0, 0);
+		//engine.DisplayImage(image, 0, 0);
+		engine.DisplayImage(bottom_layer, 0, 0);
+		engine.DisplayImage(front_layer, 160, 120);
 
 		engine.PollEvent();
 		if (engine.exit)
@@ -63,7 +70,9 @@ int main(int argc, char* argv[])
 	}
 
 	//Unload assests
-	engine.UnloadImage(image);
+	//engine.UnloadImage(image);
+	engine.UnloadImage(front_layer);
+	engine.UnloadImage(bottom_layer);
 	engine.UnloadMusic();
 	engine.UnloadSFX(sfx);
 
