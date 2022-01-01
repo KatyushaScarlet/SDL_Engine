@@ -52,21 +52,32 @@ int main(int argc, char* argv[])
 	//engine.PlaySFX(sfx);
 
 	//Load Global Font
-	globalFont = engine.LoadFont("./assests/zpix.ttf", 16);
+	globalFont = engine.LoadFont("./assests/zpix.ttf", 20);
 	//Load Text
 	Image_Data* textHello = engine.LoadText(globalFont, "Hello World!");
 	Image_Data* textFPS = engine.LoadText(globalFont, "Inter-frame delay=-1ms");
 
+	Color_Map white = { 255,255,255,255 };
+
 	bool quit = false;
 	while (!quit)
 	{
+		//Draw white background
+		engine.DrawRectangle(0, 0, 640, 480, &white);
+
+		//Draw Something
+		engine.DrawRectangle(50, 100, 200, 100,nullptr,false);
+		engine.DrawLine(50, 250, 250, 350);
+		engine.DrawLine(50, 350, 250, 250);
+		engine.DrawCircle(150, 300, 50);
+
 		//Display Image
-		engine.DisplayImage(bottomLayer, 0, 0);
-		engine.DisplayImage(frontLayer, 160, 120);
+		//engine.DisplayImage(bottomLayer, 0, 0);
+		//engine.DisplayImage(frontLayer, 160, 120);
 
 		//Display Text
-		engine.DisplayImage(textHello, 16, 16);
-		engine.DisplayImage(textFPS,16,32);
+		engine.DisplayImage(textHello, 20, 20);
+		engine.DisplayImage(textFPS,20,40);
 
 
 		engine.PollEvent();

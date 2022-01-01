@@ -161,7 +161,7 @@ Image_Data* SDL_Engine::LoadText(Font_Data* font, std::string text, Color_Map* f
 	//Set default Color to Black
 	if (!fontColor)
 	{
-		fontColor = new Color_Map{ 0,0,0 };
+		fontColor = new Color_Map{ 0,0,0,255 };
 	}
 
 	surface = TTF_RenderText_Solid(font, text.c_str(), *fontColor);
@@ -219,7 +219,7 @@ Image_Data* SDL_Engine::LoadImage(std::string path, Color_Map* transparentColor)
 	return texture;
 }
 
-void SDL_Engine::DisplayImage(Image_Data* image, int x, int y)
+void SDL_Engine::DisplayImage(Image_Data* image, int left, int top)
 {
 	SDL_Rect rect;
 	int width, height;
@@ -231,8 +231,8 @@ void SDL_Engine::DisplayImage(Image_Data* image, int x, int y)
 		printf("Error: %s\n", SDL_GetError());
 	}
 
-	rect.x = x;
-	rect.y = y;
+	rect.x = left;
+	rect.y = top;
 	rect.w = width;
 	rect.h = height;
 	result = SDL_RenderCopy(renderer, image, nullptr, &rect);
@@ -325,4 +325,109 @@ bool SDL_Engine::PlaySFX(SFX_Data* SFX, int playback)
 void SDL_Engine::UnloadSFX(SFX_Data* SFX)
 {
 	Mix_FreeChunk(SFX);
+}
+
+void SDL_Engine::DrawRectangle(int left, int top, int width, int height, Color_Map* color, bool fill)
+{
+	Direction rect = { left,top,width,height };
+
+	//Set default color to black
+	if (!color)
+	{
+		color = new Color_Map{ 0,0,0,255 };
+	}
+	SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
+
+	//Draw fill or outline rectangle
+	if (fill) SDL_RenderFillRect(renderer, &rect);
+	else SDL_RenderDrawRect(renderer, &rect);
+
+	//CLear renderer
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+}
+
+void SDL_Engine::DrawLine(int left1, int top1, int left2, int top2, Color_Map* color)
+{
+	//Set default color to black
+	if (!color)
+	{
+		color = new Color_Map{ 0,0,0,255 };
+	}
+	SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
+
+	//Draw line
+	SDL_RenderDrawLine(renderer, left1, top1, left2, top2);
+
+	//CLear renderer
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+}
+
+void SDL_Engine::DrawDot(int left, int top, Color_Map* color)
+{
+	//Set default color to black
+	if (!color)
+	{
+		color = new Color_Map{ 0,0,0,255 };
+	}
+	SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
+
+	//Draw dot
+	SDL_RenderDrawPoint(renderer, left, top);
+
+	//CLear renderer
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+}
+
+void SDL_Engine::DrawCircle(int centerLeft, int centreTop, int radius, Color_Map* color, bool fill)
+{
+	//Set default color to black
+	if (!color)
+	{
+		color = new Color_Map{ 0,0,0,255 };
+	}
+	SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
+
+	const int diameter = (radius * 2);
+	int x = (radius - 1);
+	int y = 0;
+	int tx = 1;
+	int ty = 1;
+	int error = (tx - diameter);
+
+	while (x >= y)
+	{
+		//  Each of the following renders an octant of the circle
+		SDL_RenderDrawPoint(renderer, centerLeft + x, centreTop - y);
+		SDL_RenderDrawPoint(renderer, centerLeft + x, centreTop + y);
+		if(fill)SDL_RenderDrawLine(renderer, centerLeft + x, centreTop - y, centerLeft + x, centreTop + y);
+
+		SDL_RenderDrawPoint(renderer, centerLeft - x, centreTop - y);
+		SDL_RenderDrawPoint(renderer, centerLeft - x, centreTop + y);
+		if (fill)SDL_RenderDrawLine(renderer, centerLeft - x, centreTop - y, centerLeft - x, centreTop + y);
+
+		SDL_RenderDrawPoint(renderer, centerLeft + y, centreTop - x);
+		SDL_RenderDrawPoint(renderer, centerLeft + y, centreTop + x);
+		if (fill)SDL_RenderDrawLine(renderer, centerLeft + y, centreTop - x, centerLeft + y, centreTop + x);
+
+		SDL_RenderDrawPoint(renderer, centerLeft - y, centreTop - x);
+		SDL_RenderDrawPoint(renderer, centerLeft - y, centreTop + x);
+		if (fill)SDL_RenderDrawLine(renderer, centerLeft - y, centreTop - x, centerLeft - y, centreTop + x);
+
+		if (error <= 0)
+		{
+			++y;
+			error += ty;
+			ty += 2;
+		}
+
+		if (error > 0)
+		{
+			--x;
+			tx += 2;
+			error += (tx - diameter);
+		}
+	}
+
+	//CLear renderer
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }

@@ -10,11 +10,14 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 
+//Class
 #define Image_Data SDL_Texture
 #define SFX_Data Mix_Chunk
 #define Font_Data TTF_Font
 #define Color_Map SDL_Color
+#define Direction SDL_Rect
 
+//Function
 #define DisplayText DisplayImage
 #define UnloadText UnloadImage
 
@@ -52,7 +55,7 @@ public:
 
 	//Image
 	Image_Data* LoadImage(std::string path, Color_Map* transparentColor = nullptr);
-	void DisplayImage(Image_Data* image, int x, int y);
+	void DisplayImage(Image_Data* image, int left, int top);
 	void UnloadImage(Image_Data* image);
 
 	//Music
@@ -67,6 +70,11 @@ public:
 	bool PlaySFX(SFX_Data* SFX, int playback = 0);
 	void UnloadSFX(SFX_Data* SFX);
 
+	//Geometry Rendering
+	void DrawRectangle(int left, int top, int width, int height, Color_Map* color = nullptr, bool fill = true);
+	void DrawLine(int left1, int top1, int left2, int top2, Color_Map* color = nullptr);
+	void DrawDot(int left, int top, Color_Map* color = nullptr);
+	void DrawCircle(int centerLeft, int centreTop, int radius, Color_Map* color = nullptr, bool fill = true);
 };
 
 #endif
