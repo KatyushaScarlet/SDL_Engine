@@ -21,6 +21,7 @@
 //};
 SDL_Engine engine;
 SFX_Data* sfx;
+Font_Data* globalFont;
 
 void KeyPress(int scanCode, int keyCode, bool isPress);
 int main(int argc, char* argv[])
@@ -35,12 +36,12 @@ int main(int argc, char* argv[])
 	engine.keyPressEventHandler = &KeyPress;
 
 	//Load image
-	//Image_Data* image = engine.LoadImage("./assests/th06_covor.jpg");
+
 	//Load front layer with transparent color
-	ColorMap black = { 0,0,0 };
-	Image_Data* front_layer = engine.LoadImage("./assests/front.bmp", &black);
+	Color_Map black = { 0,0,0 };
+	Image_Data* frontLayer = engine.LoadImage("./assests/front.bmp", &black);
 	//Load bottom layer
-	Image_Data* bottom_layer = engine.LoadImage("./assests/bottom.bmp");
+	Image_Data* bottomLayer = engine.LoadImage("./assests/bottom.bmp");
 
 	//Load background music and play (loops)
 	//engine.LoadMusic("./assests/th06_01.mp3");
@@ -50,13 +51,23 @@ int main(int argc, char* argv[])
 	//sfx = engine.LoadSFX("./assests/pause.wav");
 	//engine.PlaySFX(sfx);
 
+	//Load Global Font
+	globalFont = engine.LoadFont("./assests/zpix.ttf", 16);
+	//Load Text
+	Image_Data* textHello = engine.LoadText(globalFont, "Hello World!");
+	Image_Data* textFPS = engine.LoadText(globalFont, "Inter-frame delay=-1ms");
+
 	bool quit = false;
 	while (!quit)
 	{
-		//Display
-		//engine.DisplayImage(image, 0, 0);
-		engine.DisplayImage(bottom_layer, 0, 0);
-		engine.DisplayImage(front_layer, 160, 120);
+		//Display Image
+		engine.DisplayImage(bottomLayer, 0, 0);
+		engine.DisplayImage(frontLayer, 160, 120);
+
+		//Display Text
+		engine.DisplayImage(textHello, 16, 16);
+		engine.DisplayImage(textFPS,16,32);
+
 
 		engine.PollEvent();
 		if (engine.exit)
@@ -67,12 +78,16 @@ int main(int argc, char* argv[])
 
 		int delay = engine.Render();
 		//printf("Inter-frame delay=%dms\n", delay);
+		engine.UnloadText(textFPS);
+		textFPS = engine.LoadText(globalFont, "Inter-frame delay=" + std::to_string(delay) + "ms");
 	}
 
 	//Unload assests
-	//engine.UnloadImage(image);
-	engine.UnloadImage(front_layer);
-	engine.UnloadImage(bottom_layer);
+	engine.UnloadImage(frontLayer);
+	engine.UnloadImage(bottomLayer);
+	engine.UnloadText(textHello);
+	engine.UnloadText(textFPS);
+	engine.UnloadFont(globalFont);
 	engine.UnloadMusic();
 	engine.UnloadSFX(sfx);
 

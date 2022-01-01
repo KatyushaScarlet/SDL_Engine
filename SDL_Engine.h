@@ -12,13 +12,11 @@
 
 #define Image_Data SDL_Texture
 #define SFX_Data Mix_Chunk
+#define Font_Data TTF_Font
+#define Color_Map SDL_Color
 
-struct ColorMap
-{
-	int red;
-	int green;
-	int blue;
-};
+#define DisplayText DisplayImage
+#define UnloadText UnloadImage
 
 class SDL_Engine
 {
@@ -29,7 +27,7 @@ private:
 	Mix_Music* music;
 
 	//Interval time between two frames (ms)
-	float frameInterval;
+	double frameInterval;
 
 public:
 	bool exit = false;
@@ -63,6 +61,7 @@ public:
 			return false;
 		}
 
+		//Maybe not necessary?
 		//if (SDL_GL_SetSwapInterval(-1))
 		//{
 		//	printf("SDL_GL_SetSwapInterval: Freesync not supported or enabled. Renabling Lock FPS again for that reason.\n");
@@ -84,7 +83,7 @@ public:
 		SDL_RenderClear(renderer);
 		SDL_RenderPresent(renderer);
 
-		//Init JPG and PNG
+		//Init Image for JPG and PNG
 		int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
 		int initted = IMG_Init(imgFlags);
 		if ((initted & imgFlags) != imgFlags) 
@@ -93,7 +92,7 @@ public:
 			printf("Error: %s\n", IMG_GetError());
 		}
 
-		//Init sound
+		//Init Mix
 		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048))
 		{
 			printf("Mix_OpenAudio: SDL_mixer could not initialize!\n");
@@ -108,7 +107,7 @@ public:
 		}
 
 		//Calculate interval time
-		frameInterval = 1000.0 / (float)fps;
+		frameInterval = 1000.0 / (double)fps;
 
 		SDL_GetWindowSize(window, &width, &height);
 		printf("Video OK!\nWidth=%d, Heigth=%d, FPS=%d\n", width, height, fps);
@@ -118,9 +117,8 @@ public:
 
 	int Render()
 	{
-		Uint64 start;
-		Uint64 delay;
-		start = SDL_GetTicks64();
+		Uint64 start = SDL_GetTicks64();
+		int delay;
 
 		//Rendering
 		SDL_RenderPresent(renderer);
@@ -134,13 +132,18 @@ public:
 			SDL_Delay(frameInterval - (SDL_GetTicks() - start));
 		}
 
-		return (int)delay;
+		return delay;
 	}
 
 	void Destory()
 	{
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
+
+		//Quit subsystem
+		TTF_Quit();
+		Mix_Quit();
+		IMG_Quit();
 		SDL_Quit();
 	}
 
@@ -174,7 +177,49 @@ public:
 		}
 	}
 
-	Image_Data* LoadImage(std::string path, ColorMap *transparentColor=nullptr)
+	//TTF
+	Font_Data* LoadFont(std::string path, int size)
+	{
+		Font_Data* font = TTF_OpenFont(path.c_str(), size);
+		if (!font) {
+			printf("TTF_OpenFont: Fail to load font from %s\n", path.c_str());
+			printf("Error: %s\n", TTF_GetError());
+		}
+		return font;
+	}
+
+	void UnloadFont(Font_Data* font)
+	{
+		TTF_CloseFont(font);
+	}
+
+	Image_Data* LoadText(Font_Data* font, std::string text, Color_Map* fontColor = nullptr)
+	{
+		Image_Data* texture;
+		SDL_Surface* surface;
+
+		//Set default Color to Black
+		if (!fontColor)
+		{
+			fontColor = new Color_Map{ 0,0,0 };
+		}
+
+		surface = TTF_RenderText_Solid(font, text.c_str(), *fontColor);
+		if (!surface)
+		{
+			printf("TTF_RenderText_Solid: Could not render text: %s.\n", text.c_str());
+			printf("Error: %s\n", TTF_GetError());
+			return nullptr;
+		}
+
+		texture = SDL_CreateTextureFromSurface(renderer, surface);
+		SDL_FreeSurface(surface);
+
+		return texture;
+	}
+
+	//Image
+	Image_Data* LoadImage(std::string path, Color_Map *transparentColor=nullptr)
 	{
 		Image_Data* texture;
 		SDL_Surface* surface;
@@ -190,7 +235,7 @@ public:
 		//If set transparent color
 		if (transparentColor)
 		{
-			SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, transparentColor->red, transparentColor->green, transparentColor->blue));
+			SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, transparentColor->r, transparentColor->g, transparentColor->b));
 		}
 
 		////(Bug?)stretchSurface is always NULL
@@ -325,7 +370,7 @@ public:
 		Mix_FreeChunk(SFX);
 	}
 
-	//TTF
+
 };
 
 #endif
