@@ -19,25 +19,37 @@
 //	SDL_SCANCODE_PAGEUP,//L2
 //	SDL_SCANCODE_PAGEDOWN//R2
 //};
+SDL_Engine engine;
+SFX_Data* sfx;
 
 void KeyPress(int scanCode, int keyCode, bool isPress);
 int main(int argc, char* argv[])
 {
-	SDL_Engine engine;
 	if (!engine.Init(640,480,false,60))
 	{
 		printf("Failed to create window, exit\n");
 		return 0;
 	}
-
+	
+	//Bind key press event
 	engine.keyPressEventHandler = &KeyPress;
 
-	SDL_Texture* sample = engine.LoadImage("./hero.png");
+	//Load image
+	Image_Data* image = engine.LoadImage("./assests/th06_covor.jpg");
+
+	//Load background music and play (loops)
+	engine.LoadMusic("./assests/th06_01.mp3");
+	engine.PlayMusic(true);
+
+	//Load SFX and play
+	sfx = engine.LoadSFX("./assests/pause.wav");
+	engine.PlaySFX(sfx);
 
 	bool quit = false;
 	while (!quit)
 	{
-		engine.DisplayImage(sample, 0, 0);
+		//Display
+		engine.DisplayImage(image, 0, 0);
 
 		engine.PollEvent();
 		if (engine.exit)
@@ -50,7 +62,11 @@ int main(int argc, char* argv[])
 		//printf("Inter-frame delay=%dms\n", delay);
 	}
 
-	engine.UnloadImage(sample);
+	//Unload assests
+	engine.UnloadImage(image);
+	engine.UnloadMusic();
+	engine.UnloadSFX(sfx);
+
 	engine.Destory();
 	return 0;
 }
