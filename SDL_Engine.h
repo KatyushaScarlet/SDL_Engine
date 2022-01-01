@@ -167,7 +167,7 @@ public:
 		}
 	}
 
-	Image_Data* LoadImage(std::string path)
+	Image_Data* LoadImage(std::string path/*, int width=-1,int height=-1*/)
 	{
 		Image_Data* texture;
 		SDL_Surface* surface;
@@ -179,6 +179,22 @@ public:
 			printf("Error: %s\n", SDL_GetError());
 			return nullptr;
 		}
+
+		////(Bug?)stretchSurface is always NULL
+		//if (width >= 0 || height >= 0)
+		//{
+		//	//Set stretch destination
+		//	SDL_Surface* stretchSurface = new SDL_Surface();
+		//	SDL_Rect stretchRect;
+		//	stretchRect.x = 0;
+		//	stretchRect.y = 0;
+		//	stretchRect.w = (width >= 0) ? width : surface->w;
+		//	stretchRect.h = (height >= 0) ? height : surface->h;
+		//	int flag = SDL_BlitScaled(surface, nullptr, stretchSurface, &stretchRect);
+
+		//	SDL_FreeSurface(surface);
+		//	surface = stretchSurface;
+		//}
 
 		texture = SDL_CreateTextureFromSurface(renderer, surface);
 		SDL_FreeSurface(surface);
@@ -215,7 +231,6 @@ public:
 		if (image)
 		{
 			SDL_DestroyTexture(image);
-			delete image;
 		}
 	}
 
@@ -227,7 +242,6 @@ public:
 		{
 			Mix_HaltMusic();
 			Mix_FreeMusic(music);
-			delete music;
 		}
 
 		music = Mix_LoadMUS(path.c_str());
@@ -266,7 +280,6 @@ public:
 	{
 		Mix_HaltMusic();
 		Mix_FreeMusic(music);
-		delete music;
 	}
 
 	//SFX
@@ -297,7 +310,6 @@ public:
 	void UnloadSFX(SFX_Data* SFX)
 	{
 		Mix_FreeChunk(SFX);
-		delete SFX;
 	}
 
 	//TTF
